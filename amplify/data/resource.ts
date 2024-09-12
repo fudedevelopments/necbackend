@@ -61,29 +61,62 @@ const schema = a.schema({
     .handler(a.handler.function(CreateGroup))
     .authorization((allow) => [allow.group("ADMINS")])
     .returns(a.json()),
+  
+  Class : a
+    .model({
+      classname: a.string(),
+      dean: a.hasOne("Dean", "deanid"),
+      ac: a.hasMany("Ac", "classid"),
+      proctors: a.hasMany("Proctor", "classid")
+    })
+    .authorization(allow => [
+      allow.groups(["ADMINS", "STAFF"])
+    ]),
+  
+  Dean : a
+    .model({
+      deanname: a.string(),
+      email: a.email(),
+      classid: a.id(),
+      class: a.belongsTo("Class", "classid")
+    })
+    .authorization(allow => [
+      allow.groups(["ADMINS", "STAFF"])
+    ]),
 
-  proctorstatus: a.enum(["PENDING", "APPROVED", "REJECTED"]),
-  acstatus: a.enum(["PENDING", "APPROVED", "REJECTED"]),
-  finalstatus: a.enum(["PENDING", "APPROVED", "REJECTED"]),
-  OnDutyRequest: a
+  Ac: a
+    .model({
+      acname: a.string(),
+      email: a.email(),
+      classid: a.id(),
+      class: a.belongsTo("Class", "classid")
+    })
+    .authorization(allow => [
+      allow.groups(["ADMINS", "STAFF"])
+    ]),
+  
+  Proctor: a
+    .model({
+      proctorname: a.string(),
+      email: a.email(),
+      students: a.hasMany("Student", "proctorid"),
+      classid: a.id(),
+      class: a.belongsTo("Class", "classid")
+    })
+    .authorization(allow => [
+      allow.groups(["ADMINS", "STAFF"])
+    ]),
+  
+  Student: a
     .model({
       studentname: a.string(),
-      stdentemail: a.string(),
-      eventname: a.string(),
-      date: a.string(),
-      location: a.string(),
-      registerurl: a.string(),
-      documents: a.string().array(),
-      proctorstatus: a.ref("proctorstatus"),
-      proctorcomments: a.string(),
-      acstatus: a.ref("acstatus"),
-      accomments: a.string(),
-      finalstatus: a.ref("finalstatus"),
-      finalcomments: a.string(),
-    }).authorization(allow => [
-      allow.owner(),
+      email: a.email(),
+      proctorid: a.id(),
+      proctor: a.belongsTo("Proctor", "proctorid")
+    })
+    .authorization(allow => [
+      allow.groups(["ADMINS", "STAFF"])
     ]),
-    
   
 });
 
@@ -91,6 +124,7 @@ const schema = a.schema({
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
+  name: "necproject",
   schema,
   authorizationModes: {
     defaultAuthorizationMode: "userPool",
