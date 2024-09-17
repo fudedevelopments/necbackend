@@ -13,7 +13,8 @@ const schema = a.schema({
       eventdetails: a.string(),
       date: a.string(),
       location: a.string(),
-      registerurl: a.string()
+      registerurl: a.string(),
+      ondutyrequest : a.hasMany("Ondutyrequest", "eventid")
     })
     .authorization(allow => [
       allow.group("STUDENTS").to(['read']),
@@ -62,23 +63,24 @@ const schema = a.schema({
     .authorization((allow) => [allow.group("ADMINS")])
     .returns(a.json()),
   
-  Class : a
+  ClassRoom : a
     .model({
-      classname: a.string(),
-      dean: a.hasOne("Dean", "deanid"),
-      ac: a.hasMany("Ac", "classid"),
-      proctors: a.hasMany("Proctor", "classid")
+      classRoomname: a.string(),
+      hod: a.hasMany("Hod", "classRoomid"),
+      ac: a.hasMany("Ac", "classRoomid"),
+      proctors: a.hasMany("Proctor", "classRoomid"),
+      students : a.hasMany("Student", "classRoomid"),
     })
     .authorization(allow => [
       allow.groups(["ADMINS", "STAFF"])
     ]),
   
-  Dean : a
+   Hod : a
     .model({
-      deanname: a.string(),
+      hodname: a.string(),
       email: a.email(),
-      classid: a.id(),
-      class: a.belongsTo("Class", "classid")
+      classRoomid: a.id(),
+      classRoom: a.belongsTo("ClassRoom", "classRoomid")
     })
     .authorization(allow => [
       allow.groups(["ADMINS", "STAFF"])
@@ -88,36 +90,47 @@ const schema = a.schema({
     .model({
       acname: a.string(),
       email: a.email(),
-      classid: a.id(),
-      class: a.belongsTo("Class", "classid")
+      classRoomid: a.id(),
+      classRoom: a.belongsTo("ClassRoom", "classRoomid")
     })
     .authorization(allow => [
       allow.groups(["ADMINS", "STAFF"])
     ]),
-  
   Proctor: a
     .model({
       proctorname: a.string(),
       email: a.email(),
-      students: a.hasMany("Student", "proctorid"),
-      classid: a.id(),
-      class: a.belongsTo("Class", "classid")
+      classRoomid: a.id(),
+      classRoom: a.belongsTo("ClassRoom", "classRoomid"),
+      students : a.hasMany("Student", "proctorid")
     })
     .authorization(allow => [
       allow.groups(["ADMINS", "STAFF"])
     ]),
   
-  Student: a
+  Student: a.model({
+    studentname: a.string(),
+    email: a.email(),
+    classRoomid: a.id(),
+    classRoom: a.belongsTo("ClassRoom", "classRoomid"),
+    proctorid: a.id(),
+    proctor: a.belongsTo("Proctor", "proctorid")!,
+  }).authorization(allow => [
+    allow.groups(["ADMINS", "STAFF"])
+  ]),
+  
+ 
+  
+  Ondutyrequest : a
     .model({
-      studentname: a.string(),
+      ondutyname: a.string(),
       email: a.email(),
-      proctorid: a.id(),
-      proctor: a.belongsTo("Proctor", "proctorid")
+      eventid: a.id(),
+      events: a.belongsTo("EventDetatils", "eventid"),
     })
     .authorization(allow => [
       allow.groups(["ADMINS", "STAFF"])
     ]),
-  
 });
 
 
